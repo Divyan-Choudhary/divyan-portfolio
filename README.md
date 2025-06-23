@@ -36,8 +36,7 @@ From **data science experiments** to **CSS sorcery** and **Python madness**, thi
 
 ## 🚀 Live Preview
 
-[🔗 Click here to view the site (GitHub Pages)](https://Divyan-Choudhary.github.io/divyan-portfolio)  
-> *(Replace YOUR_USERNAME with your GitHub username)*
+[🔗 Click here to view the site (GitHub Pages)](https://Divyan-Choudhary.github.io/divyan-portfolio) 
 
 ---
 
