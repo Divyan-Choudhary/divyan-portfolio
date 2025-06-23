@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Divyan Choudhary</title>
+  <style>
+    :root {
+      --bg-light: #f0f0f0;
+      --bg-dark: #1a1a1a;
+      --text-light: #2c3e50;
+      --text-dark: #ffffff;
+      --panel-light: white;
+      --panel-dark: #2c2c2c;
+      --shadow-light: rgba(0, 0, 0, 0.1);
+      --shadow-dark: rgba(255, 255, 255, 0.1);
+      --spacing-unit: 16px;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.6s ease-in-out, color 0.6s ease-in-out;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 50px;
+      height: 24px;
+      background: #888;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      box-shadow: 0 0 5px var(--shadow-light);
+      cursor: pointer;
+      z-index: 1000;
+      transition: background 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+    }
+
+    body.dark-mode .theme-toggle {
+      background: #555;
+      box-shadow: 0 0 5px var(--shadow-dark);
+    }
+
+    .theme-toggle span {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transform: translateX(0);
+      transition: transform 0.3s ease, background 0.6s ease-in-out;
+    }
+
+    body.dark-mode .theme-toggle span {
+      transform: translateX(26px);
+      background: #ddd;
+    }
+
+    .weather-menu {
+      position: fixed;
+      top: 60px;
+      right: 16px;
+      width: 40px;
+      z-index: 998;
+    }
+
+    .weather-toggle {
+      width: 40px;
+      height: 40px;
+      background: var(--panel-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--text-light);
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow-light);
+      transition: transform 0.3s ease, background 0.6s ease-in-out, color 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+    }
+
+    body.dark-mode .weather-toggle {
+      background: var(--panel-dark);
+      color: var(--text-dark);
+      box-shadow: 0 4px 12px var(--shadow-dark);
+    }
+
+    .weather-toggle.open {
+      transform: rotate(180deg);
+    }
+
+    .weather-bar {
+      max-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--panel-light);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px var(--shadow-light);
+      transition: max-height 0.4s ease-in-out, background 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+      margin-top: 4px;
+    }
+
+    body.dark-mode .weather-bar {
+      background: var(--panel-dark);
+      box-shadow: 0 4px 12px var(--shadow-dark);
+    }
+
+    .weather-bar.show {
+      max-height: 200px;
+    }
+
+    .weather-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      font-size: 18px;
+      padding: 10px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease-in-out, color 0.6s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    body.dark-mode .weather-btn {
+      color: var(--text-dark);
+    }
+
+    .weather-btn:hover, .weather-btn.active {
+      background: #2c3e50;
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      background: var(--panel-light);
+      border-radius: 16px;
+      box-shadow: 0 8px 20px var(--shadow-light);
+      cursor: pointer;
+      transition: transform 0.6s ease-in-out, background 0.6s ease-in-out, color 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+      max-width: 400px;
+      width: 90%;
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      animation: pulse 2.5s infinite;
+    }
+
+    body.dark-mode .container {
+      background: var(--panel-dark);
+      box-shadow: 0 8px 20px var(--shadow-dark);
+      animation: pulseDark 2.5s infinite;
+    }
+
+    .container.pop {
+      transform: translate(-50%, -80%) scale(1.03);
+    }
+
+    .info-panel {
+      margin-top: var(--spacing-unit);
+      gap: var(--spacing-unit);
+      flex-direction: row;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 400px;
+      width: 90%;
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      pointer-events: none;
+    }
+
+    .info-panel.show {
+      opacity: 1;
+      transform: translate(-50%, 10px);
+      pointer-events: auto;
+    }
+
+    .panel-box {
+      padding: var(--spacing-unit);
+      background: var(--panel-light);
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow-light);
+      transition: transform 0.3s ease-in-out, background 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+      min-width: 100px;
+      text-align: center;
+      flex: 1;
+    }
+
+    body.dark-mode .panel-box {
+      background: var(--panel-dark);
+      box-shadow: 0 4px 12px var(--shadow-dark);
+    }
+
+    .panel-box:hover {
+      transform: scale(1.05);
+      background: rgba(0,0,0,0.05);
+    }
+
+    .details-box {
+      background: var(--panel-light);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: var(--spacing-unit);
+      box-shadow: 0 3px 10px var(--shadow-light);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, background 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+      max-width: 400px;
+      width: 90%;
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      pointer-events: none;
+    }
+
+    body.dark-mode .details-box {
+      background: var(--panel-dark);
+      color: var(--text-dark);
+      box-shadow: 0 3px 10px var(--shadow-dark);
+    }
+
+    .details-box.show {
+      opacity: 1;
+      transform: translate(-50%, 10px);
+      pointer-events: auto;
+    }
+
+    #projectsBox {
+      max-height: 300px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #888 transparent;
+    }
+
+    #projectsBox::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #projectsBox::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #projectsBox::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    #projectsBox::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .sub-container {
+      margin-bottom: var(--spacing-unit);
+      background: var(--panel-light);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px var(--shadow-light);
+      transition: background 0.6s ease-in-out, box-shadow 0.6s ease-in-out;
+    }
+
+    body.dark-mode .sub-container {
+      background: var(--panel-dark);
+      box-shadow: 0 2px 8px var(--shadow-dark);
+    }
+
+    .sub-container-header {
+      padding: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--text-light);
+      transition: color 0.6s ease-in-out;
+    }
+
+    body.dark-mode .sub-container-header {
+      color: var(--text-dark);
+    }
+
+    .sub-container-header:hover {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .sub-container-content {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 12px;
+      opacity: 0;
+      transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out, padding 0.4s ease-in-out;
+    }
+
+    .sub-container-content.show {
+      max-height: 200px;
+      padding: 12px;
+      opacity: 1;
+    }
+
+    .sub-container-content ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .sub-container-content li {
+      margin-bottom: 8px;
+      color: var(--text-light);
+      transition: color 0.6s ease-in-out;
+    }
+
+    body.dark-mode .sub-container-content li {
+      color: var(--text-dark);
+    }
+
+    body.sunny {
+      background: linear-gradient(270deg, #fceabb, #f8b500);
+      background-size: 400% 400%;
+      animation: moveSun 12s ease infinite;
+      transition: background 1.2s ease-in-out;
+    }
+
+    body.rainy {
+      background: linear-gradient(to right, #3a6073, #16222a);
+      transition: background 1.2s ease-in-out;
+    }
+
+    body.autumn {
+      background: linear-gradient(to right, #d1913c, #ffd194);
+      transition: background 1.2s ease-in-out;
+    }
+
+    body.snowy {
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+      transition: background 1.2s ease-in-out;
+    }
+
+    @keyframes moveSun {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .rain-drop, .snow-flake, .leaf {
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+      animation: fall linear infinite;
+    }
+
+    .rain-drop {
+      width: 2px;
+      height: 20px;
+      background: #aee;
+      animation-duration: 0.6s;
+    }
+
+    .snow-flake {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      animation-duration: 5s;
+    }
+
+    .leaf {
+      width: 10px;
+      height: 10px;
+      background: orange;
+      border-radius: 50% 50% 50% 0;
+      animation-duration: 4s;
+      transform: rotate(45deg);
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10px); }
+      100% { transform: translateY(110vh); }
+    }
+
+    .sun-ray {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff4b3 20%, transparent 70%);
+      animation: pulseSun 3s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes pulseSun {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.5); opacity: 0.2; }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 8px 20px var(--shadow-light); }
+      50% { box-shadow: 0 8px 30px var(--shadow-light); }
+      100% { box-shadow: 0 8px 20px var(--shadow-light); }
+    }
+
+    @keyframes pulseDark {
+      0% { box-shadow: 0 8px 20px var(--shadow-dark); }
+      50% { box-shadow: 0 8px 30px var(--shadow-dark); }
+      100% { box-shadow: 0 8px 20px var(--shadow-dark); }
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <span>🌙</span>
+  </div>
+
+  <div class="weather-menu">
+    <div class="weather-toggle" onclick="toggleWeatherMenu(this)">🛰️</div>
+    <div class="weather-bar" id="weatherBar">
+      <button class="weather-btn" onclick="setWeather('sunny', this)">☀️</button>
+      <button class="weather-btn" onclick="setWeather('rainy', this)">🌧️</button>
+      <button class="weather-btn" onclick="setWeather('autumn', this)">🍂</button>
+      <button class="weather-btn" onclick="setWeather('snowy', this)">❄️</button>
+    </div>
+  </div>
+
+  <div class="container" id="mainBox">
+    <h1>DIVYAN CHOUDHARY</h1>
+    <p>Student at JECRC University</p>
+  </div>
+
+  <div class="info-panel" id="infoPanel">
+    <div class="panel-box" onclick="toggleDetail('skillsBox')">Skills</div>
+    <div class="panel-box" onclick="toggleDetail('hobbiesBox')">Hobbies</div>
+    <div class="panel-box" onclick="toggleDetail('projectsBox')">Projects</div>
+  </div>
+
+  <div id="skillsBox" class="details-box">
+    <ul>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li>Python</li>
+      <li>Java</li>
+      <li>C++</li>
+      <li>Data Visualization</li>
+      <li>Analytics and Manipulation</li>
+      <li>SQL</li>
+      <li>English Proficiency</li>
+    </ul>
+  </div>
+
+  <div id="hobbiesBox" class="details-box">
+    <ul>
+      <li>Chess (Districts)</li>
+      <li>American Football (State)</li>
+      <li>Writing - Poems, Stories, Songs</li>
+    </ul>
+  </div>
+
+  <div id="projectsBox" class="details-box">
+    <div class="sub-container">
+      <div class="sub-container-header" onclick="toggleSubContainer(this)">Data Science Projects</div>
+      <div class="sub-container-content">
+        <ul>
+          <li>Dream-to-Image Synthesizer [in progress]</li>
+          <li>AI Gossip Detector [in progress]</li>
+          <li>DNA Music Generator [in progress]</li>
+          <li>Geo-AI smells [in progress]</li>
+          <li> Zombie Apocalypse Simulator [in progress]</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sub-container">
+      <div class="sub-container-header" onclick="toggleSubContainer(this)">HTML/CSS/JS Projects</div>
+      <div class="sub-container-content">
+        <ul>
+          <li>Theme Park Simulator [in progress]</li>
+          <li>Mind Maze Navigation UI [in progress]</li>
+          <li>Time Travel Timeline [in progress]</li>
+          <li>CSS-Paint [in progress]</li>
+          <li>Sci-Fi Control Room Interface [in progress]</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sub-container">
+      <div class="sub-container-header" onclick="toggleSubContainer(this)">Python Projects</div>
+      <div class="sub-container-content">
+        <ul>
+          <li>Harry Potter Spell Interprete [in progress]</li>
+          <li> AI Psychologist [in progresst]</li>
+          <li> EmotionCam [in progress]</li>
+          <li>DeadChat: [in progress]</li>
+          <li>Reality Bender: [in progress]</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const mainBox = document.getElementById("mainBox");
+    const toggleBtn = document.querySelector(".theme-toggle span");
+    const weatherBar = document.getElementById("weatherBar");
+
+    mainBox.addEventListener("click", () => {
+      const infoPanel = document.getElementById("infoPanel");
+      const skillsBox = document.getElementById("skillsBox");
+      const hobbiesBox = document.getElementById("hobbiesBox");
+      const projectsBox = document.getElementById("projectsBox");
+      const isVisible = infoPanel.classList.contains("show");
+
+      if (isVisible) {
+        infoPanel.classList.remove("show");
+        mainBox.classList.remove("pop");
+        skillsBox.classList.remove("show");
+        hobbiesBox.classList.remove("show");
+        projectsBox.classList.remove("show");
+        // Hide all sub-container content when closing info panel
+        document.querySelectorAll(".sub-container-content").forEach(content => {
+          content.classList.remove("show");
+        });
+      } else {
+        infoPanel.classList.add("show");
+        mainBox.classList.add("pop");
+      }
+    });
+
+    function toggleDetail(id) {
+      const boxes = ["skillsBox", "hobbiesBox", "projectsBox"];
+      const targetBox = document.getElementById(id);
+      const isVisible = targetBox.classList.contains("show");
+
+      // Hide all boxes first
+      boxes.forEach(b => {
+        document.getElementById(b).classList.remove("show");
+      });
+
+      // If the clicked box was not visible, show it
+      if (!isVisible) {
+        targetBox.classList.add("show");
+        // Reset sub-container content when opening projects box
+        if (id === "projectsBox") {
+          document.querySelectorAll(".sub-container-content").forEach(content => {
+            content.classList.remove("show");
+          });
+        }
+      }
+    }
+
+    function toggleSubContainer(header) {
+      const content = header.nextElementSibling;
+      const isVisible = content.classList.contains("show");
+
+      // Hide all sub-container content first
+      document.querySelectorAll(".sub-container-content").forEach(c => {
+        c.classList.remove("show");
+      });
+
+      // Toggle the clicked sub-container content
+      if (!isVisible) {
+        content.classList.add("show");
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+      const isDark = document.body.classList.contains("dark-mode");
+      toggleBtn.textContent = isDark ? "🌙" : "🌞";
+    }
+
+    function toggleWeatherMenu(el) {
+      weatherBar.classList.toggle("show");
+      el.classList.toggle("open");
+    }
+
+    function createParticles(type) {
+      clearParticles();
+      const count = 40;
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.classList.add(type);
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.top = Math.random() * -100 + 'px';
+        el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        document.body.appendChild(el);
+      }
+    }
+
+    function clearParticles() {
+      document.querySelectorAll('.rain-drop, .snow-flake, .leaf, .sun-ray').forEach(el => el.remove());
+    }
+
+    function createSunRay() {
+      const ray = document.createElement('div');
+      ray.classList.add('sun-ray');
+      ray.style.left = 'calc(50% - 40px)';
+      ray.style.top = '100px';
+      document.body.appendChild(ray);
+    }
+
+    function setWeather(type, btn) {
+      const buttons = document.querySelectorAll(".weather-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+
+      const existing = document.body.dataset.weather;
+      if (existing) document.body.classList.remove(existing);
+      clearParticles();
+
+      if (existing === type) {
+        document.body.removeAttribute("data-weather");
+        weatherBar.classList.remove("show");
+        document.querySelector(".weather-toggle").classList.remove("open");
+      } else {
+        document.body.setAttribute("data-weather", type);
+        document.body.classList.add(type);
+        btn.classList.add("active");
+
+        if (type === 'rainy') createParticles('rain-drop');
+        else if (type === 'snowy') createParticles('snow-flake');
+        else if (type === 'autumn') createParticles('leaf');
+        else if (type === 'sunny') createSunRay();
+
+        weatherBar.classList.remove("show");
+        document.querySelector(".weather-toggle").classList.remove("open");
+      }
+    }
+  </script>
+</body>
+</html>
